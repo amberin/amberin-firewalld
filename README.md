@@ -4,8 +4,6 @@
 
 1. [Description](#description)
 2. [Setup - The basics of getting started with firewalld](#setup)
-    * [What firewalld affects](#what-firewalld-affects)
-    * [Setup requirements](#setup-requirements)
     * [Beginning with firewalld](#beginning-with-firewalld)
 3. [Usage - Configuration options and additional functionality](#usage)
 4. [Limitations - OS compatibility, etc.](#limitations)
@@ -39,17 +37,80 @@ The module has the following (known) disadvantages when compared to
 
 * It implements only the most basic features. Passthroughs, port
   forwarding, direct rules, masquerade and more are not supported
-  (yet).
-* It edits XML files directly and relies heavily on   templates, so it will break if FirewallD
-  changes the look of its XMLs.
+  (yet).cardno:000609611367
+* It edits XML files directly and relies heavily on templates, so it 
+  will break if FirewallD changes the look of its XMLs.
 * It currently does not implement any resources or providers;
   everything is expected to be described by the ENC/`hiera`.
+* It currently contains some pretty ugly attempts at Ruby logic.
+* It has no tests and is probably not very robust.
 
 ## Setup
 
 ### Beginning with firewalld
 
 ## Usage
+
+In your manifest, simply
+```
+include firewalld
+```
+
+And then, in `hiera`:
+```
+$ cat hieradatadir/common.yaml
+---
+
+firewalld::log_denied: unicast
+
+firewalld::zones:
+  control:
+    sources: 
+			- 10.0.10.0/24
+    target: ACCEPT
+  monitoring:
+    sources: 
+			- 10.0.20.0/24
+    services:
+      - nrpe
+    ports:
+      9100: tcp
+      9117: tcp
+
+firewalld::all_ipsets:
+  alice:
+    - 10.20.0.100.11
+    - 10.20.0.110.11
+  bob:
+    - 10.20.0.100.12
+    - 10.20.0.110.12
+  charlie:
+    - 10.20.0.100.13
+    - 10.20.0.110.13
+  dave:
+    - 10.20.0.100.14
+    - 10.20.0.110.14
+  prod_access:
+    - alice
+    - bob
+    - charlie
+  jump_host_users:
+    - dave
+    - prod_access
+
+$ cat hieradatadir/nodes/myjumphost.yml
+---
+
+firewalld::zones:
+  clients:
+    sources:
+			- 10.0.100.0/24
+			- 10.0.110.0/24
+		rich_rules:
+			'SSH from jump_host_users':
+				- service: ssh
+				- ipset: jump_host_users
+```
 
 ## Limitations
 
