@@ -66,11 +66,11 @@ firewalld::log_denied: unicast
 firewalld::zones:
   control:
     sources: 
-			- 10.0.10.0/24
+      - 10.0.10.0/24
     target: ACCEPT
   monitoring:
-    sources: 
-			- 10.0.20.0/24
+    sources:
+      - 10.0.20.0/24
     services:
       - nrpe
     ports:
@@ -104,12 +104,12 @@ $ cat hieradatadir/nodes/myjumphost.yml
 firewalld::zones:
   clients:
     sources:
-			- 10.0.100.0/24
-			- 10.0.110.0/24
-		rich_rules:
-			'SSH from jump_host_users':
-				- service: ssh
-				- ipset: jump_host_users
+      - 10.0.100.0/24
+      - 10.0.110.0/24
+    rich_rules:
+      'SSH from jump_host_users':
+        - service: ssh
+        - ipset: jump_host_users
 ```
 
 ## Limitations
