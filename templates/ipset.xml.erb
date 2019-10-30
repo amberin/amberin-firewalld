@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ipset type="hash:ip">
+<%# Resolve four levels of nested IP sets; raise error at the fifth level. We
+  should add checks for duplicate entries, but FirewallD ignores them, so it's
+  currently not a problem. All this looping should obviously be done by a
+  recursive function, but that requires writing custom Ruby functions for the
+  module. -%>
+<% @all_ipsets[@ipsetname].each do |level1item| -%>
+<% if level1item !~ /^\D+$/ -%>
+<%# Level 1: This is a regular IP address; print it -%>
+  <entry><%= level1item %></entry>
+<% else -%>
+<%# Level 2: Item is a nested IP set; let's resolve it -%>
+<% @all_ipsets[level1item].each do |level2item| -%>
+<% if level2item !~ /^\D+$/ -%>
+<%# Level 2: This is a regular IP address; print it -%>
+  <entry><%= level2item %></entry>
+<% else -%>
+<%# Level 3: Item is a nested IP set; let's resolve it -%>
+<% @all_ipsets[level2item].each do |level3item| -%>
+<% if level3item !~ /^\D+$/ -%>
+<%# Level 3: This is a regular IP address; print it -%>
+  <entry><%= level3item %></entry>
+<% else -%>
+<%# Level 4: Item is a nested IP set; let's resolve it -%>
+<% @all_ipsets[level3item].each do |level4item| -%>
+<% if level4item !~ /^\D+$/ -%>
+<%# Level 4: This is a regular IP address; print it -%>
+  <entry><%= level4item %></entry>
+<% else -%>
+<%# Okay, the nesting of IP sets is getting out of hand. Let's throw an error. -%>
+<% raise Puppet::Error, "Too many levels of nesting in firewalld::all_ipsets!" -%>
+<% end -%>
+<% end -%>
+<% end -%>
+<% end -%>
+<% end -%>
+<% end -%>
+<% end -%>
+<% end -%>
+</ipset>
