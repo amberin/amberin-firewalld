@@ -37,13 +37,14 @@ The module has the following (known) disadvantages when compared to
 
 * It implements only the most basic features. Passthroughs, port
   forwarding, direct rules, masquerade and more are not supported
-  (yet).cardno:000609611367
+  (yet).
 * It edits XML files directly and relies heavily on templates, so it 
   will break if FirewallD changes the look of its XMLs.
 * It currently does not implement any resources or providers;
   everything is expected to be described by the ENC/`hiera`.
 * It currently contains some pretty ugly attempts at Ruby logic.
-* It has no tests and is probably not very robust.
+* It currently has no tests, very little validation of hiera input, 
+  and hence is probably not very robust.
 
 ## Setup
 
