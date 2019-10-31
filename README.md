@@ -20,7 +20,7 @@ It has the following advantages over `puppet-firewalld`:
 * It allows nesting of IP sets, something which is not yet supported
   in FirewallD itself. I have currently limited nesting to a depth of
   4 levels.
-* It allows for defining all IP sets in a single ENC/hiera scope (e.g.
+* It allows for defining all IP sets in a single ENC/Hiera scope (e.g.
   `common.yaml`), ensuring consistency and providing a better
   overview. IP sets can be defined globally, but will only be configured
   on a host if it uses them.
@@ -28,7 +28,7 @@ It has the following advantages over `puppet-firewalld`:
   aggressive control over the FirewallD configuration.
 * It is very lightweight, whereas I have found `puppet-firewalld` to
   be very slow and a bit of a resource hog.
-* It allows complete `hiera` description of a zone, including services
+* It allows complete Hiera description of a zone, including services
   and rich rules, in the same hash, which in my opinion provides
   better overview.
 
@@ -38,13 +38,13 @@ The module has the following (known) disadvantages when compared to
 * It implements only the most basic features. Passthroughs, port
   forwarding, direct rules, masquerade and more are not supported
   (yet).
-* It edits XML files directly and relies heavily on templates, so it 
+* It works by editing XML files directly and relies heavily on templates, so it 
   will break if FirewallD changes the look of its XMLs.
 * It currently does not implement any resources or providers;
-  everything is expected to be described by the ENC/`hiera`.
+  everything is expected to be described by the ENC/Hiera.
 * It currently contains some pretty ugly attempts at Ruby logic.
-* It currently has no tests, very little validation of hiera input, 
-  and hence is probably not very robust.
+* It currently has no tests and very little validation of Hiera input, 
+  so it is probably not very robust.
 
 ## Setup
 
@@ -57,7 +57,7 @@ In your manifest, simply
 include firewalld
 ```
 
-And then, in `hiera`:
+And then, in Hiera:
 ```
 $ cat hieradatadir/common.yaml
 ---
