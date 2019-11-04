@@ -11,26 +11,26 @@
 
 ## Description
 
-This module was created because I was unhappy with certain aspects of
-[puppet-firewalld](https://forge.puppet.com/puppet/firewalld),
-primarily when it comes to managing IP sets.
+This Puppet module is intended as an alternative to
+[puppet-firewalld](https://forge.puppet.com/puppet/firewalld).
+It was created because I disliked certain aspects of the latter, 
+primarily the options for managing IP sets.
 
 It has the following advantages over `puppet-firewalld`:
 
-* It allows nesting of IP sets, something which is not yet supported
-  in FirewallD itself. Nesting is currently limited to a depth of
+* It allows nesting of IP sets, something not yet supported
+  by FirewallD itself. Nesting is currently limited to a depth of
   4 levels.
 * It allows for defining all IP sets in a single ENC/Hiera scope (e.g.
-  `common.yaml`), ensuring consistency and providing a better
-  overview. IP sets can be defined globally, but will only be configured
-  on the nodes that use them.
-* It purges any undefined zones and IP sets, thus taking more
+  `common.yaml`), promoting consistency and oversight. IP sets can be 
+  defined globally, but will only be configured on nodes where they 
+  are actually used.
+* It purges any undefined zones and IP sets, taking more
   aggressive control over the FirewallD configuration.
 * It is very fast, whereas I have found `puppet-firewalld` to
   be very slow and a bit of a resource hog.
-* It allows complete Hiera description of a zone, including any services
-  and rich rules, in the same hash, which in my opinion provides
-  better overview.
+* It expects a single hash describing all properties of each zone, 
+  which in my opinion provides better oversight.
 
 The module has the following (known) disadvantages when compared to
 `puppet-firewalld`:
@@ -41,7 +41,7 @@ The module has the following (known) disadvantages when compared to
 * Whereas `puppet-firewalld` works by issuing `firewall-cmd` commands,
   this module replaces configuration files, and thus is more prone to
   failing silently unless input is carefully validated (which I
-  definitely believe is doable).
+  believe is definitely doable).
 * It currently does not implement any resources or providers;
   everything is expected to be described by the ENC/Hiera.
 * It currently contains some pretty ugly attempts at Ruby logic.
