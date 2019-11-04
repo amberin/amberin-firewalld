@@ -28,7 +28,7 @@ It has the following advantages over `puppet-firewalld`:
   aggressive control over the FirewallD configuration.
 * It is very fast, whereas I have found `puppet-firewalld` to
   be very slow and a bit of a resource hog.
-* It allows complete Hiera description of a zone, including services
+* It allows complete Hiera description of a zone, including any services
   and rich rules, in the same hash, which in my opinion provides
   better overview.
 
