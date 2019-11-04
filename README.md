@@ -102,6 +102,7 @@ firewalld::ipsets:
 
 $ cat hieradatadir/nodes/myjumphost.yml
 ---
+firewalld::log_denied: unicast
 firewalld::zones:
   clients:
     rich_rules:

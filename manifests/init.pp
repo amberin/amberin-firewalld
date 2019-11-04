@@ -16,9 +16,6 @@
 #
 #   $ cat hieradatadir/common.yaml
 #   ---
-# 
-#   firewalld::log_denied: unicast
-#
 #   firewalld::zones:
 #     control:
 #       target: ACCEPT
