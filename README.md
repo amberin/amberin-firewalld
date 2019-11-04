@@ -63,7 +63,7 @@ $ cat hieradatadir/common.yaml
 ---
 firewalld::zones:
   control:
-    target: ACCEPT
+    target: accept
     sources: 
       - 10.0.10.0/24
   monitoring:
@@ -106,7 +106,7 @@ firewalld::log_denied: unicast
 firewalld::zones:
   clients:
     rich_rules:
-      'SSH from jump_host_users':
+      'SSH for jump host users':
         - service: ssh
         - ipset: jump_host_users
 ```

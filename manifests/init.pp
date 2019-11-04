@@ -18,7 +18,7 @@
 #   ---
 #   firewalld::zones:
 #     control:
-#       target: ACCEPT
+#       target: accept
 #       sources:
 #         - 10.0.10.0/24
 #     monitoring:
@@ -111,7 +111,7 @@ class firewalld (
   $zones.each |$zone, $zonevalues| {
     # ...validate the provided zone data...
     if firewalld::validate_zone_data($zone, $zonevalues) {
-      # ...and build the zone file
+      # ...and build the zone file from template.
       file { "/etc/firewalld/zones/${zone}.xml":
         content => epp('firewalld/zone.xml.epp', {
           'zone'        => $zone,
@@ -144,8 +144,8 @@ class firewalld (
         }
       }
     }
-  # Flatten the resulting nested lists, remove duplicates and purge any empty
-  # elements.
+  # (Flatten the resulting nested lists, remove duplicates and purge any empty
+  # elements:)
   }.flatten.unique.filter |$item| { $item =~ NotUndef }
 
   # Create an IP set definition file for each unique, referenced IP set.

@@ -5,7 +5,16 @@ function firewalld::validate_zone_data(String $zone, Hash $inputdata) >> Boolean
 
   if $inputdata["target"] {
     $target = $inputdata["target"]
-    if ! ($target in ['default','ACCEPT','REJECT','DROP']) {
+    if ! ($target in [
+      'default',
+      'accept',
+      'ACCEPT',
+      'reject',
+      'REJECT',
+      '%%REJECT%%',
+      'drop',
+      'DROP'
+    ]) {
       fail("${func_name}: Invalid target '${target}' defined for zone '${zone}'")
     }
   }
