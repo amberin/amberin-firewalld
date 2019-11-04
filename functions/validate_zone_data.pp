@@ -1,10 +1,10 @@
 # Custom function for validating the contents of the hash firewalld::zones
-function firewalld::validate_zone_data(String $zone, Hash $inputdata) >> Boolean {
+function firewalld::validate_zone_data(String $zone, Hash $zonedata) >> Boolean {
 
   $func_name = "firewalld::validate_zone_data()"
 
-  if $inputdata["target"] {
-    $target = $inputdata["target"]
+  if $zonedata["target"] {
+    $target = $zonedata["target"]
     if ! ($target in [
       'default',
       'accept',
@@ -19,16 +19,16 @@ function firewalld::validate_zone_data(String $zone, Hash $inputdata) >> Boolean
     }
   }
 
-  if $inputdata["interfaces"] {
-    $inputdata["interfaces"].each |$interface| {
+  if $zonedata["interfaces"] {
+    $zonedata["interfaces"].each |$interface| {
       if ! has_key($::facts['networking']['interfaces'], $interface) {
         fail("${func_name}: Nonexistent interface '${interface}' defined for zone '${zone}'")
       }
     }
   }
 
-  if $inputdata["sources"] {
-    $inputdata["sources"].each |$source| {
+  if $zonedata["sources"] {
+    $zonedata["sources"].each |$source| {
       # TODO: Verify that ipset sources exist, and ensure that they
       # get created on the node.
       if ! ($source.is_a(Stdlib::IP::Address) or $source =~ /^ipset:[a-z]{2,}$/) {
@@ -37,24 +37,24 @@ function firewalld::validate_zone_data(String $zone, Hash $inputdata) >> Boolean
     }
   }
 
-  if $inputdata["services"] {
-    $inputdata["services"].each |$service| {
+  if $zonedata["services"] {
+    $zonedata["services"].each |$service| {
       if ! ($service.is_a(String) and $service =~ /^[a-z]{2,}$/) {
         fail("${func_name}: Invalid service '${service}' defined for zone '${zone}'")
       }
     }
   }
 
-  if $inputdata["ports"] {
-    $inputdata["ports"].each |$portnumber, $protocol| {
+  if $zonedata["ports"] {
+    $zonedata["ports"].each |$portnumber, $protocol| {
       if ! ($portnumber.is_a(Stdlib::Port) and $protocol.is_a(String) and $protocol =~ /^tcp$|^udp$/) {
         fail("${func_name}: Invalid port '${portnumber}: ${protocol}' defined for zone '${zone}'")
       }
     }
   }
 
-  if $inputdata["rich_rules"] {
-    $inputdata["rich_rules"].each |$rich_rule| {
+  if $zonedata["rich_rules"] {
+    $zonedata["rich_rules"].each |$rich_rule| {
       if $rich_rule[1]["family"] {
         $family = $rich_rule[1]["family"]
         if ! ($family.is_a(String) and $family =~ /^ipv4$|^ipv6$/) {
