@@ -11,24 +11,24 @@
 
 ## Description
 
-This module was created because I was unhappy with
-[puppet-firewalld](https://forge.puppet.com/puppet/firewalld) in
-certain regards, primarily when it comes to managing IP sets.
+This module was created because I was unhappy with certain aspects of
+[puppet-firewalld](https://forge.puppet.com/puppet/firewalld),
+primarily when it comes to managing IP sets.
 
 It has the following advantages over `puppet-firewalld`:
 
 * It allows nesting of IP sets, something which is not yet supported
-  in FirewallD itself. I have currently limited nesting to a depth of
+  in FirewallD itself. Nesting is currently limited to a depth of
   4 levels.
-* It allows for defining all IP sets in a single ENC/hiera scope (e.g.
+* It allows for defining all IP sets in a single ENC/Hiera scope (e.g.
   `common.yaml`), ensuring consistency and providing a better
   overview. IP sets can be defined globally, but will only be configured
-  on a host if it uses them.
-* It purges any undefined zones and IP sets, taking more
+  on the nodes that use them.
+* It purges any undefined zones and IP sets, thus taking more
   aggressive control over the FirewallD configuration.
-* It is very lightweight, whereas I have found `puppet-firewalld` to
+* It is very fast, whereas I have found `puppet-firewalld` to
   be very slow and a bit of a resource hog.
-* It allows complete `hiera` description of a zone, including services
+* It allows complete Hiera description of a zone, including services
   and rich rules, in the same hash, which in my opinion provides
   better overview.
 
@@ -38,13 +38,13 @@ The module has the following (known) disadvantages when compared to
 * It implements only the most basic features. Passthroughs, port
   forwarding, direct rules, masquerade and more are not supported
   (yet).
-* It edits XML files directly and relies heavily on templates, so it 
-  will break if FirewallD changes the look of its XMLs.
+* Whereas `puppet-firewalld` works by issuing `firewall-cmd` commands,
+  this module replaces configuration files, and thus is more prone to
+  failing silently unless input is carefully validated (which I
+  definitely believe is doable).
 * It currently does not implement any resources or providers;
-  everything is expected to be described by the ENC/`hiera`.
+  everything is expected to be described by the ENC/Hiera.
 * It currently contains some pretty ugly attempts at Ruby logic.
-* It currently has no tests, very little validation of hiera input, 
-  and hence is probably not very robust.
 
 ## Setup
 
@@ -57,18 +57,15 @@ In your manifest, simply
 include firewalld
 ```
 
-And then, in `hiera`:
+And then, in Hiera:
 ```
 $ cat hieradatadir/common.yaml
 ---
-
-firewalld::log_denied: unicast
-
 firewalld::zones:
   control:
+    target: ACCEPT
     sources: 
       - 10.0.10.0/24
-    target: ACCEPT
   monitoring:
     sources:
       - 10.0.20.0/24
@@ -77,36 +74,36 @@ firewalld::zones:
     ports:
       9100: tcp
       9117: tcp
+  clients:
+      - 10.0.30.0/24
+  vpn_clients:
+      - 10.0.40.0/24
 
-firewalld::all_ipsets:
+firewalld::ipsets:
   alice:
-    - 10.0.100.11
-    - 10.0.110.11
+    - 10.0.30.11
+    - 10.0.40.11
   bob:
-    - 10.0.100.12
-    - 10.0.110.12
+    - 10.0.30.12
+    - 10.0.40.12
   charlie:
-    - 10.0.100.13
-    - 10.0.110.13
+    - 10.0.30.13
+    - 10.0.40.13
   dave:
-    - 10.0.100.14
-    - 10.0.110.14
+    - 10.0.30.14
+    - 10.0.40.14
   prod_access:
     - alice
     - bob
     - charlie
   jump_host_users:
-    - dave
     - prod_access
+    - dave
 
 $ cat hieradatadir/nodes/myjumphost.yml
 ---
-
 firewalld::zones:
   clients:
-    sources:
-      - 10.0.100.0/24
-      - 10.0.110.0/24
     rich_rules:
       'SSH from jump_host_users':
         - service: ssh

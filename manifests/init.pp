@@ -1,16 +1,17 @@
 # @summary Manage FirewallD with nested IP sets
 #
-# This module is intended as an alternative to puppet-firewalld (see
-# README for background). It updates FirewallD configuration by
-# directly editing the XML configuration files.
+# This module was created as an alternative to puppet-firewalld (see
+# README for background). It configures FirewallD by directly editing
+# the XML configuration files.
 #
 # This module has no types or providers, but is intended to be blanket
-# applied and configured exclusively from ENC/hiera.
+# applied and configured exclusively from the ENC/Hiera.
 #
-# This module allows nested IP sets (currently up to 4 levels) which
+# This module allows nested IP sets (currently up to 4 levels), which
 # is not (yet) supported natively by FirewallD.
 #
 # @example
+#   $ cat mymanifest.pp
 #   include firewalld
 #
 #   $ cat hieradatadir/common.yaml
@@ -20,29 +21,37 @@
 #
 #   firewalld::zones:
 #     control:
-#       source: 10.0.10.0/24
 #       target: ACCEPT
+#       sources:
+#         - 10.0.10.0/24
 #     monitoring:
-#       source: 10.0.20.0/24
+#       sources:
+#         - 10.0.20.0/24
 #       services:
 #         - nrpe
 #       ports:
 #         9100: tcp
 #         9117: tcp
+#     clients:
+#       sources:
+#         - 10.0.30.0/24
+#     vpn_clients:
+#       sources:
+#         - 10.0.40.0/24
 #   
-#   firewalld::all_ipsets:
+#   firewalld::ipsets:
 #     alice:
-#       - 10.20.0.100.11
-#       - 10.20.0.110.11
+#       - 10.0.30.11
+#       - 10.0.40.11
 #     bob:
-#       - 10.20.0.100.12
-#       - 10.20.0.110.12
+#       - 10.0.30.12
+#       - 10.0.40.12
 #     charlie:
-#       - 10.20.0.100.13
-#       - 10.20.0.110.13
+#       - 10.0.30.13
+#       - 10.0.40.13
 #     dave:
-#       - 10.20.0.100.14
-#       - 10.20.0.110.14
+#       - 10.0.30.14
+#       - 10.0.40.14
 #     prod_access:
 #       - alice
 #       - bob
@@ -54,12 +63,13 @@
 class firewalld (
   Enum['all','unicast','broadcast','multicast','off'] $log_denied = 'off',
   Enum['present','absent','latest','installed'] $package_ensure = 'installed',
-  Boolean                   $manage_package = true,
   Stdlib::Ensure::Service   $service_ensure = 'running',
+  Boolean                   $purge_config   = true,
+  Boolean                   $manage_package = true,
   Boolean                   $service_enable = true,
   String                    $default_zone   = 'public',
   Hash                      $zones          = {},
-  Hash                      $all_ipsets     = {},
+  Hash                      $ipsets         = {},
 ) {
 
   require ::stdlib
@@ -76,20 +86,21 @@ class firewalld (
     }
   }
 
-  # Institute config dir dictatorship
-  file {
-    [
+  if $purge_config {
+    # Institute config dir dictatorship.
+    file { [
       '/etc/firewalld/zones',
       '/etc/firewalld/ipsets',
     ]:
-    ensure  => directory,
-    purge   => true,
-    recurse => true,
-    mode    => '0500',
-    notify  => Service['firewalld'],
+      ensure  => directory,
+      purge   => true,
+      recurse => true,
+      mode    => '0500',
+      notify  => Service['firewalld'],
+    }
   }
 
-  # Set global config values
+  # Set global config values.
   augeas { 'firewalld.conf':
     context => '/files/etc/firewalld/firewalld.conf',
     changes => [
@@ -99,25 +110,35 @@ class firewalld (
     notify  => Service['firewalld'],
   }
 
-  # Create a zone file for each FirewallD zone defined by ENC/hiera
+  # For each FirewallD zone defined by ENC/Hiera...
   $zones.each |$zone, $zonevalues| {
-    file { "/etc/firewalld/zones/${zone}.xml":
-      content => template('firewalld/zone.xml.erb'),
-      notify  => Service['firewalld'],
+    # ...validate the provided zone data...
+    if firewalld::validate_zone_data($zone, $zonevalues) {
+      # ...and build the zone file
+      file { "/etc/firewalld/zones/${zone}.xml":
+        content => epp('firewalld/zone.xml.epp', {
+          'zone'        => $zone,
+          'zonevalues'  => $zonevalues,
+        }),
+        notify  => Service['firewalld'],
+      }
     }
   }
 
-  # If the default zone is not described by ENC/hiera, create an empty
-  # zone file
+  # If the default zone is not described by ENC/Hiera, create an empty
+  # zone file.
   if ! $zones[$default_zone] {
     $zone = $default_zone
     file { "/etc/firewalld/zones/${zone}.xml":
-      content => template('firewalld/zone.xml.erb'),
+      content => epp('firewalld/zone.xml.epp', {
+        'zone'        => $zone,
+        'zonevalues'  => '',
+      }),
       notify  => Service['firewalld'],
     }
   }
 
-  # Find all unique IP sets that are used in the defined zones
+  # Find all unique IP sets that appear in the defined zones.
   $needed_ipsets = lookup('firewalld::zones', Hash).map |String $key, Hash $zonevalues| {
     if $zonevalues['rich_rules'] {
       $zonevalues['rich_rules'].map |String $rule, Hash $rulevalues| {
@@ -130,10 +151,13 @@ class firewalld (
   # elements.
   }.flatten.unique.filter |$item| { $item =~ NotUndef }
 
-  # Create an IP set definition file for each unique, referenced IP set
+  # Create an IP set definition file for each unique, referenced IP set.
   $needed_ipsets.each |$ipsetname| {
     file { "/etc/firewalld/ipsets/${ipsetname}.xml":
-      content => template('firewalld/ipset.xml.erb'),
+      content => epp('firewalld/ipset.xml.epp', {
+        'ipsets'    => $::firewalld::ipsets,
+        'ipsetname' => $ipsetname,
+      }),
       notify  => Service['firewalld'],
     }
   }
