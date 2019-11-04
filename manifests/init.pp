@@ -144,8 +144,8 @@ class firewalld (
         }
       }
     }
-  # (Flatten the resulting nested lists, remove duplicates and purge any empty
-  # elements:)
+  # Flatten the resulting nested lists, remove duplicates and purge any empty
+  # elements.
   }.flatten.unique.filter |$item| { $item =~ NotUndef }
 
   # Create an IP set definition file for each unique, referenced IP set.
