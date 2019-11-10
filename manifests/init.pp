@@ -7,8 +7,8 @@
 # This module has no types or providers, but is intended to be blanket
 # applied and configured exclusively from the ENC/Hiera.
 #
-# This module allows nested IP sets (currently up to 4 levels), which
-# is not (yet) supported natively by FirewallD.
+# This module allows nested IP sets, which is not (yet) supported
+# natively by FirewallD.
 #
 # @example
 #   $ cat mymanifest.pp
@@ -54,8 +54,8 @@
 #       - bob
 #       - charlie
 #     jump_host_users:
-#       - dave
 #       - prod_access
+#       - dave
 # 
 class firewalld (
   Enum['all','unicast','broadcast','multicast','off'] $log_denied = 'off',
@@ -149,11 +149,12 @@ class firewalld (
   }.flatten.unique.filter |$item| { $item =~ NotUndef }
 
   # Create an IP set definition file for each unique, referenced IP set.
-  $needed_ipsets.each |$ipsetname| {
-    file { "/etc/firewalld/ipsets/${ipsetname}.xml":
+  $needed_ipsets.each |$ipset_name| {
+    # A custom function resolves and validates the IP set contents.
+    $ipset_entries = firewalld::resolve_ipset($ipset_name, $::firewalld::ipsets)
+    file { "/etc/firewalld/ipsets/${ipset_name}.xml":
       content => epp('firewalld/ipset.xml.epp', {
-        'ipsets'    => $::firewalld::ipsets,
-        'ipsetname' => $ipsetname,
+        'ipset_entries' => $ipset_entries,
       }),
       notify  => Service['firewalld'],
     }

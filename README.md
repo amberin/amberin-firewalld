@@ -19,8 +19,7 @@ primarily the options for managing IP sets.
 It has the following advantages over `puppet-firewalld`:
 
 * It allows nesting of IP sets, something not yet supported
-  by FirewallD itself. Nesting is currently limited to a depth of
-  4 levels.
+  by FirewallD itself.
 * It allows for defining all IP sets in a single ENC/Hiera scope (e.g.
   `common.yaml`), promoting consistency and oversight. IP sets can be 
   defined globally, but will only be configured on nodes where they 
@@ -44,7 +43,6 @@ The module has the following (known) disadvantages when compared to
   believe is definitely doable).
 * It currently does not implement any resources or providers;
   everything is expected to be described by the ENC/Hiera.
-* It currently contains some pretty ugly attempts at Ruby logic.
 
 ## Setup
 
