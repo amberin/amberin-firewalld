@@ -1,5 +1,3 @@
-# This custom functions fetches the contents of a (possibly nested) IP
-# set
 Puppet::Functions.create_function(:'firewalld::resolve_ipset') do
   dispatch :resolve do
     param 'String', :ipset_name
