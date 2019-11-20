@@ -1,4 +1,4 @@
-# @summary Manage FirewallD with nested IP sets
+# @summary Class to manage FirewallD with nested IP sets
 #
 # This module was created as an alternative to puppet-firewalld (see
 # README for background). It configures FirewallD by replacing the
