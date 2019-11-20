@@ -25,7 +25,7 @@ It has the following advantages over `puppet-firewalld`:
   defined globally, but will only be configured on nodes where they 
   are actually used.
 * It purges any undefined zones and IP sets, taking more
-  aggressive control over the FirewallD configuration.
+  aggressive control over your firewall configuration.
 * It is very fast, whereas I have found `puppet-firewalld` to
   be very slow and a bit of a resource hog.
 * It expects a single hash describing all properties of each zone, 
@@ -73,8 +73,10 @@ firewalld::zones:
       9100: tcp
       9117: tcp
   clients:
+    sources:
       - 10.0.30.0/24
   vpn_clients:
+    sources:
       - 10.0.40.0/24
 
 firewalld::ipsets:
