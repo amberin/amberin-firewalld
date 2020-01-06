@@ -1,4 +1,4 @@
-# @summary Class to manage FirewallD with nested IP sets
+# @summary Manage FirewallD with nested IP sets
 #
 # This module was created as an alternative to puppet-firewalld (see
 # README for background). It configures FirewallD by replacing the
@@ -27,8 +27,9 @@
 #       services:
 #         - nrpe
 #       ports:
-#         9100: tcp
-#         9117: tcp
+#         tcp:
+#           - 9100
+#           - 9117
 #     clients:
 #       sources:
 #         - 10.0.30.0/24
@@ -101,21 +102,21 @@ class firewalld (
   augeas { 'firewalld.conf':
     context => '/files/etc/firewalld/firewalld.conf',
     changes => [
-      "set LogDenied $log_denied",
-      "set DefaultZone $default_zone",
+      "set LogDenied ${log_denied}",
+      "set DefaultZone ${default_zone}",
     ],
     notify  => Service['firewalld'],
   }
 
   # For each FirewallD zone defined by ENC/Hiera...
   $zones.each |$zone, $zonevalues| {
-    # ...validate the provided zone data...
+    # ...validate the provided zone data using our custom function...
     if firewalld::validate_zone_data($zone, $zonevalues) {
       # ...and build the zone file from template.
       file { "/etc/firewalld/zones/${zone}.xml":
         content => epp('firewalld/zone.xml.epp', {
-          'zone'        => $zone,
-          'zonevalues'  => $zonevalues,
+          'zone'       => $zone,
+          'zonevalues' => $zonevalues,
         }),
         notify  => Service['firewalld'],
       }
@@ -123,13 +124,13 @@ class firewalld (
   }
 
   # If the default zone is not described by ENC/Hiera, create an empty
-  # zone file.
+  # zone with no openings.
   if ! $zones[$default_zone] {
     $zone = $default_zone
     file { "/etc/firewalld/zones/${zone}.xml":
       content => epp('firewalld/zone.xml.epp', {
-        'zone'        => $zone,
-        'zonevalues'  => '',
+        'zone'       => $zone,
+        'zonevalues' => '',
       }),
       notify  => Service['firewalld'],
     }
@@ -150,7 +151,7 @@ class firewalld (
 
   # Create an IP set definition file for each unique, referenced IP set.
   $needed_ipsets.each |$ipset_name| {
-    # A custom function resolves and validates the IP set contents.
+    # Resolve and validate the IP sets using a custom function.
     $ipset_entries = firewalld::resolve_ipset($ipset_name, $::firewalld::ipsets)
     file { "/etc/firewalld/ipsets/${ipset_name}.xml":
       content => epp('firewalld/ipset.xml.epp', {
