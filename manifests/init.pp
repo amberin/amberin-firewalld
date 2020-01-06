@@ -1,8 +1,8 @@
-# @summary Manage FirewallD with nested IP sets
+# @summary Class to manage FirewallD with nested IP sets
 #
 # This module was created as an alternative to puppet-firewalld (see
-# README for background). It configures FirewallD by directly editing
-# the XML configuration files.
+# README for background). It configures FirewallD by replacing the
+# XML configuration files with template-generated ones.
 #
 # This module has no types or providers, but is intended to be blanket
 # applied and configured exclusively from the ENC/Hiera.
