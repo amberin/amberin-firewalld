@@ -4,9 +4,12 @@
   "author": "Victor Andreasson",
   "summary": "Manage FirewallD with nested IP sets",
   "license": "Apache-2.0",
-  "source": "",
+  "source": "https://github.com/amberin/amberin-firewalld",
   "dependencies": [
-
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.6.0 < 6.0.0"
+    }
   ],
   "operatingsystem_support": [
     {
