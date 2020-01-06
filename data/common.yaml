@@ -1,1 +1,6 @@
---- {}
+---
+lookup_options:
+  firewalld::zones:
+    merge:
+      strategy: deep
+      merge_hash_arrays: true
