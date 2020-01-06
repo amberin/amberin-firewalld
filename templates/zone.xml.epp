@@ -17,13 +17,13 @@
   <%- } -%>
   <%- if $zonevalues["interfaces"] { -%>
     <%- $zonevalues["interfaces"].each |$interface| { -%>
-  <interface name="<%= $interface %>" />
+  <interface name="<%= $interface %>"/>
     <%- } -%>
   <%- } -%>
   <%- if $zonevalues["sources"] { -%>
     <%- $zonevalues["sources"].each |$source| { -%>
       <%- if $source.is_a(Stdlib::IP::Address) { -%>
-  <source address="<%= $source %>" />
+  <source address="<%= $source %>"/>
       <%- } else { -%>
         <!-- TODO: -->
         <%- fail("Zone '${zone}': Using IP sets as zone sources is not yet supported. Sorry!") -%>
@@ -32,12 +32,20 @@
   <%- } -%>
   <%- if $zonevalues["services"] { -%>
     <%- $zonevalues["services"].each |$service| { -%>
-  <service name="<%= $service %>" />
+  <service name="<%= $service %>"/>
     <%- } -%>
   <%- } -%>
   <%- if $zonevalues["ports"] { -%>
-    <%- $zonevalues["ports"].each |$number, $protocol| { -%>
-  <port port="<%= $number %>" protocol="<%= $protocol %>" />
+    <%- $zonevalues["ports"].each |$protocol, $portnumbers| { -%>
+      <%- $portnumbers.each |$portnumber| { -%>
+  <port protocol="<%= $protocol %>" port="<%= $portnumber %>"/>
+      <%- } -%>
+    <%- } -%>
+  <%- } -%>
+  <%- if $zonevalues["icmp_block_inversions"] { -%>
+  <icmp-block-inversion/>
+    <%- $zonevalues["icmp_block_inversions"].each |$icmptype| { -%>
+  <icmp-block name="<%= $icmptype %>"/>
     <%- } -%>
   <%- } -%>
   <%- if $zonevalues["rich_rules"] { -%>
@@ -48,13 +56,19 @@
   <rule family="ipv4">
       <%- } -%>
       <%- if $rulevalues["source"] { -%>
-    <source address="<%= $rulevalues["source"] %>" />
+    <source address="<%= $rulevalues["source"] %>"/>
       <%- } -%>
       <%- if $rulevalues["ipset"] { -%>
-    <source ipset="<%= $rulevalues["ipset"] %>" />
+    <source ipset="<%= $rulevalues["ipset"] %>"/>
       <%- } -%>
       <%- if $rulevalues["service"] { -%>
-    <service name="<%= $rulevalues["service"] %>" />
+    <service name="<%= $rulevalues["service"] %>"/>
+      <%- } -%>
+      <%- if $rulevalues["tcp"] { -%>
+    <port protocol="tcp" port="<%= $rulevalues["tcp"] %>"/>
+      <%- } -%>
+      <%- if $rulevalues["udp"] { -%>
+    <port protocol="udp" port="<%= $rulevalues["udp"] %>"/>
       <%- } -%>
       <%- if $rulevalues["action"] { -%>
     <<%= $rulevalues["action"] %>/>
