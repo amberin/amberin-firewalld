@@ -20,12 +20,12 @@ It has the following advantages over `puppet-firewalld`:
 
 * It allows nesting of IP sets, something not yet supported
   by FirewallD itself.
-* It allows for defining all IP sets in a single ENC/Hiera scope (e.g.
-  `common.yaml`), promoting consistency and oversight. IP sets can be 
-  defined globally, but will only be configured on nodes where they 
-  are actually used.
+* It allows for defining all IP sets and zone sources in a single
+  ENC/Hiera scope (e.g.  `common.yaml`), promoting consistency and
+  oversight. IP sets and zone sources can be defined globally, but
+  will only be configured on nodes where they are actually in use.
 * It purges any undefined zones and IP sets, taking more
-  aggressive control over your firewall configuration.
+  aggressive control over the FirewallD configuration.
 * It is very fast, whereas I have found `puppet-firewalld` to
   be very slow and a bit of a resource hog.
 * It expects a single hash describing all properties of each zone, 
@@ -70,8 +70,11 @@ firewalld::zones:
     services:
       - nrpe
     ports:
-      9100: tcp
-      9117: tcp
+      tcp:
+        - 9100
+        - 9117
+      udp:
+        - 161
   clients:
     sources:
       - 10.0.30.0/24
