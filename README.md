@@ -3,11 +3,11 @@
 #### Table of Contents
 
 1. [Description](#description)
-2. [Setup - The basics of getting started with firewalld](#setup)
-    * [Beginning with firewalld](#beginning-with-firewalld)
-3. [Usage - Configuration options and additional functionality](#usage)
-4. [Limitations - OS compatibility, etc.](#limitations)
-5. [Development - Guide for contributing to the module](#development)
+    * [Use this module if you...](#use-this-module-if-you)
+    * [DO NOT use this module if you...](#do-not-use-this-module-if-you)
+2. [Usage](#usage)
+    * [Example](#example)
+3. [Development](#development)
 
 ## Description
 
