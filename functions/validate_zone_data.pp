@@ -23,14 +23,6 @@ function firewalld::validate_zone_data(String $zone, Hash $zonedata) >> Boolean 
     }
   }
 
-  if $zonedata["interfaces"] {
-    $zonedata["interfaces"].each |$interface| {
-      if ! has_key($::facts['networking']['interfaces'], $interface) {
-        fail("${func_name}: Nonexistent interface '${interface}' defined for zone '${zone}'")
-      }
-    }
-  }
-
   if $zonedata["sources"] {
     $zonedata["sources"].each |$source| {
       # TODO: Verify that ipset sources exist, and ensure that they
@@ -76,11 +68,17 @@ function firewalld::validate_zone_data(String $zone, Hash $zonedata) >> Boolean 
               fail("${func_name}: Invalid service '${service}' defined in rich rule '${rich_rule[0]}' in zone '${zone}'")
             }
           } elsif $rule_entry[0] == "source" {
+            if $rich_rule[1].has_key("ipset") {
+              fail("${func_name}: Both 'source' and 'ipset' values defined in rich rule '${rich_rule[0]}' in zone '${zone}'. Please choose one!")
+            }
             $source = $rule_entry[1]
             if ! $source.is_a(Stdlib::IP::Address) {
               fail("${func_name}: Invalid source '${source}' defined in rich rule '${rich_rule[0]}' in zone '${zone}'")
             }
           } elsif $rule_entry[0] == "ipset" {
+            if $rich_rule[1].has_key("source") {
+              fail("${func_name}: Both 'source' and 'ipset' values defined in rich rule '${rich_rule[0]}' in zone '${zone}'. Please choose one!")
+            }
             $ipset = $rule_entry[1]
             if ! $firewalld::ipsets.has_key($ipset) {
               fail("${func_name}: Invalid IP set '${ipset}' defined in rich rule '${rich_rule[0]}' in zone '${zone}'")
@@ -155,7 +153,6 @@ function firewalld::validate_zone_data(String $zone, Hash $zonedata) >> Boolean 
 
   # Only define the zone on hosts where it is actually in use
   if $zonedata["target"].empty and
-      $zonedata["interfaces"].empty and
       $zonedata["services"].empty and
       $zonedata["ports"].empty and
       $zonedata["rich_rules"].empty {
