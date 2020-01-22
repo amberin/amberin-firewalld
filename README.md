@@ -12,9 +12,9 @@
 ## Description
 
 This Puppet module is intended as an alternative to
-[puppet-firewalld](https://forge.puppet.com/puppet/firewalld).
-It was created because I disliked certain aspects of the latter, 
-primarily the options for managing IP sets.
+[puppet-firewalld](https://forge.puppet.com/puppet/firewalld). It was
+created because I disliked certain aspects of the latter, primarily
+the options for managing IP sets.
 
 It has the following advantages over `puppet-firewalld`:
 
@@ -35,20 +35,81 @@ The module has the following (known) disadvantages when compared to
 `puppet-firewalld`:
 
 * It implements only the most basic features. Passthroughs, port
-  forwarding, direct rules, masquerade and more are not supported
-  (yet).
+  forwarding, direct rules, masquerade etc are not supported (yet).
 * Whereas `puppet-firewalld` works by issuing `firewall-cmd` commands,
   this module replaces configuration files, and thus is more prone to
   failing silently unless input is carefully validated (which I
   believe is definitely doable).
 * It currently does not implement any resources or providers;
   everything is expected to be described by the ENC/Hiera.
+* It does not implement custom services (yet).
+* It currently has no way of changing network interface zone
+  associations, since it doesn't run `firewall-cmd`, and only touches
+  `/etc/firewalld`.
 
-## Setup
+### Use this module if you...
 
-### Beginning with firewalld
+* want a single source of truth for firewall configuration;
+* want the ability to update firewall configurations using Hiera;
+* want the ability to define all zones and IP sets in one Hiera file,
+  and apply them in others;
+* want nested IP sets;
+* want something faster than `puppet-firewalld`.
+
+### DO NOT use this module if you...
+
+* want to let other Puppet modules, or other applications (e.g.
+  Docker) make changes to the firewall configuration;
+* want to define custom services;
+* need port forwarding, masquerade, direct rules, or passthrough;
+* hate modules which replace configuration files, instead of running
+  commands.
 
 ## Usage
+
+Here are all the accepted keys in the YAML hashes interpreted by this
+module:
+
+```
+firewalld::zones:
+  <zone name>:
+    target: <zone target>  # E.g. "accept". Default value: "default".
+    sources:
+      - <IP address or CIDR>
+      - ...
+    services:
+      - <service name>
+      - ...
+    ports:
+      tcp:
+        - <port number or range>  # E.g. "8443" or "9000-9100"
+        - ...
+      udp:
+        - <port number or range>
+        - ...
+    icmp_block_inversions:
+      - <ICMP message type>
+      - ...
+    rich_rules:
+      '<rich rule name>':  # Must be unique in current zone
+        family: ipv4|ipv6  # Default value: ipv4
+        source: <IP address or CIDR>
+        ipset: <ipset>  # Define either "source" or "ipset"; not both.
+        tcp: <port number or range>  # E.g. "8443" or "9000-9100"
+        udp: <port number or range>
+        action: <action>  # Default value: "accept"
+      ...
+  ...
+
+firewalld::ipsets:
+  <ipset name>:
+    - <IP address or other ipset name>
+    - ...
+  ...
+
+```
+
+### Example
 
 In your manifest, simply
 ```
@@ -114,6 +175,6 @@ firewalld::zones:
         - ipset: jump_host_users
 ```
 
-## Limitations
-
 ## Development
+
+Pull requests are very welcome.
