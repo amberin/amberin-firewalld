@@ -15,11 +15,6 @@
   <%- } else { -%>
 <zone>
   <%- } -%>
-  <%- if $zonevalues["interfaces"] { -%>
-    <%- $zonevalues["interfaces"].each |$interface| { -%>
-  <interface name="<%= $interface %>"/>
-    <%- } -%>
-  <%- } -%>
   <%- if $zonevalues["sources"] { -%>
     <%- $zonevalues["sources"].each |$source| { -%>
       <%- if $source.is_a(Stdlib::IP::Address) { -%>
