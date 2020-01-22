@@ -58,6 +58,16 @@
 #       - prod_access
 #       - dave
 # 
+#   $ cat hieradatadir/nodes/myjumphost.yaml
+#   ---
+#   firewalld::log_denied: unicast
+#   firewalld::zones:
+#     clients:
+#       rich_rules:
+#         'SSH for jump host users':
+#           - ipset: jump_host_users
+#           - service: ssh
+#
 class firewalld (
   Enum['all','unicast','broadcast','multicast','off'] $log_denied = 'off',
   Enum['present','absent','latest','installed'] $package_ensure = 'installed',
@@ -108,11 +118,11 @@ class firewalld (
     notify  => Service['firewalld'],
   }
 
-  # For each FirewallD zone defined by ENC/Hiera...
+  # For each FirewallD zone defined by the ENC/Hiera...
   $zones.each |$zone, $zonevalues| {
     # ...validate the provided zone data using our custom function...
     if firewalld::validate_zone_data($zone, $zonevalues) {
-      # ...and build the zone file from template.
+      # ...and build the zone file from our template.
       file { "/etc/firewalld/zones/${zone}.xml":
         content => epp('firewalld/zone.xml.epp', {
           'zone'       => $zone,
@@ -123,8 +133,8 @@ class firewalld (
     }
   }
 
-  # If the default zone is not described by ENC/Hiera, create an empty
-  # zone with no openings.
+  # If the default zone is not described by the ENC/Hiera, create an
+  # empty zone with no openings.
   if ! $zones[$default_zone] {
     $zone = $default_zone
     file { "/etc/firewalld/zones/${zone}.xml":
